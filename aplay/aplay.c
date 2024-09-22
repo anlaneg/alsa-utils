@@ -274,6 +274,7 @@ static void device_list(void)
 
 	card = -1;
 	if (snd_card_next(&card) < 0 || card < 0) {
+		/*不存在声卡，返回*/
 		error(_("no soundcards found..."));
 		return;
 	}
@@ -281,7 +282,7 @@ static void device_list(void)
 	       snd_pcm_stream_name(stream));
 	while (card >= 0) {
 		char name[32];
-		sprintf(name, "hw:%d", card);
+		sprintf(name, "hw:%d", card);/*构造card名称*/
 		if ((err = snd_ctl_open(&handle, name, 0)) < 0) {
 			error("control open (%i): %s", card, snd_strerror(err));
 			goto next_card;
@@ -326,6 +327,7 @@ static void device_list(void)
 		}
 		snd_ctl_close(handle);
 	next_card:
+		/*切换到下一个声卡*/
 		if (snd_card_next(&card) < 0) {
 			error("snd_card_next");
 			break;
@@ -484,9 +486,9 @@ int main(int argc, char *argv[])
 		{"help", 0, 0, 'h'},
 		{"version", 0, 0, OPT_VERSION},
 		{"list-devnames", 0, 0, 'n'},
-		{"list-devices", 0, 0, 'l'},
+		{"list-devices", 0, 0, 'l'},/*用于罗列设备*/
 		{"list-pcms", 0, 0, 'L'},
-		{"device", 1, 0, 'D'},
+		{"device", 1, 0, 'D'},/*用于指定操作设备*/
 		{"quiet", 0, 0, 'q'},
 		{"file-type", 1, 0, 't'},
 		{"channels", 1, 0, 'c'},
@@ -551,6 +553,7 @@ int main(int argc, char *argv[])
 		start_delay = 1;
 		direction = stdout;
 	} else if (strstr(argv[0], "aplay")) {
+		/*程序名称为aplay情况*/
 		stream = SND_PCM_STREAM_PLAYBACK;
 		command = "aplay";
 		direction = stdin;
@@ -578,12 +581,14 @@ int main(int argc, char *argv[])
 			version();
 			return 0;
 		case 'l':
+			/*罗列所有设备*/
 			do_device_list = 1;
 			break;
 		case 'L':
 			do_pcm_list = 1;
 			break;
 		case 'D':
+			/*指定要操作的设备*/
 			pcm_name = optarg;
 			break;
 		case 'q':
@@ -821,6 +826,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (do_device_list) {
+		/*用于罗列所有设备*/
 		if (do_pcm_list) pcm_list();
 		device_list();
 		goto __end;
@@ -911,7 +917,8 @@ int main(int argc, char *argv[])
 		}
 	} else {
 		if (stream == SND_PCM_STREAM_PLAYBACK)
-			playbackv(&argv[optind], argc - optind);
+			/*argv指定的是要播放的列表*/
+			playbackv(&argv[optind], argc - optind/*要播放的文件数目*/);
 		else
 			capturev(&argv[optind], argc - optind);
 	}
@@ -3358,7 +3365,7 @@ static void playbackv_go(int* fds, unsigned int channels, size_t loaded, off_t c
 		if (expected > vsize)
 			expected = vsize;
 		do {
-			r = safe_read(fds[0], bufs[0], expected);
+			r = safe_read(fds[0], bufs[0], expected);/*读文件到buffer*/
 			if (r < 0) {
 				perror(names[0]);
 				prg_exit(EXIT_FAILURE);
@@ -3374,7 +3381,7 @@ static void playbackv_go(int* fds, unsigned int channels, size_t loaded, off_t c
 			c += r;
 		} while (c < expected);
 		c = c * 8 / bits_per_sample;
-		r = pcm_writev(bufs, channels, c);
+		r = pcm_writev(bufs, channels, c);/*写buffer到设备*/
 		if ((size_t)r != c)
 			break;
 		r = r * bits_per_frame / 8;

@@ -813,11 +813,13 @@ static void list_ports(void)
 	snd_seq_client_info_t *cinfo;
 	snd_seq_port_info_t *pinfo;
 
+	/*申请cinfo,pinfo结构体空间*/
 	snd_seq_client_info_alloca(&cinfo);
 	snd_seq_port_info_alloca(&pinfo);
 
 	puts(" Port    Client name                      Port name");
 
+	/*将cinfo->client置为-1*/
 	snd_seq_client_info_set_client(cinfo, -1);
 	while (snd_seq_query_next_client(seq, cinfo) >= 0) {
 		int client = snd_seq_client_info_get_client(cinfo);
@@ -874,6 +876,7 @@ int main(int argc, char *argv[])
 	int c;
 	int do_list = 0;
 
+	/*初始化全局变量seq*/
 	init_seq();
 
 	while ((c = getopt_long(argc, argv, short_options,
@@ -901,6 +904,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (do_list) {
+		/*显示所有ports*/
 		list_ports();
 	} else {
 		if (port_count < 1) {

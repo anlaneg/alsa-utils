@@ -202,16 +202,20 @@ static void device_list(void)
 
 	card = -1;
 	if ((err = snd_card_next(&card)) < 0) {
+		/*检测card失败*/
 		error("cannot determine card number: %s", snd_strerror(err));
 		return;
 	}
 	if (card < 0) {
+		/*未找到card*/
 		error("no sound card found");
 		return;
 	}
 	puts("Dir Device    Name");
 	do {
+		/*列出此卡信息*/
 		list_card_devices(card);
+		/*切到下一张卡*/
 		if ((err = snd_card_next(&card)) < 0) {
 			error("cannot determine card number: %s", snd_strerror(err));
 			break;
@@ -579,6 +583,7 @@ int main(int argc, char *argv[])
 	if (do_rawmidi_list)
 		rawmidi_list();
 	if (do_device_list)
+		/*列出所有设备*/
 		device_list();
 	if (do_rawmidi_list || do_device_list)
 		return 0;
